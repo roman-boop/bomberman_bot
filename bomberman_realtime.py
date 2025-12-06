@@ -99,11 +99,13 @@ def get_balance():
 
 def open_position(side, size):
     try:
-        resp = bx.place_market_order(side, size, bx.symbol)
+        price = bx.get_mark_price('BTC-USDT')
+        stop = 0.99 * price if side == 'long' else 1.01 * price
+        stop = round(stop,1)
+        resp = bx.place_market_order(side, size, 'BTC-USDT', stop = stop)
         if resp.get('code') == 0:
             print(f"Открыта позиция: {side} size {size}")
             mark_price = get_current_price()
-            bx.set_tp_sl(bx.symbol, size, mark_price, side)  # Установка TP/SL из клиента
             return resp
         else:
             print(f"Ошибка open: {resp.get('msg')}")
@@ -174,7 +176,7 @@ if __name__ == "__main__":
         current_second = now.second
 
         # Проверяем, что минута делится на 5 и секунда < 10 (чтобы не срабатывать много раз)
-        if (current_minute % INTERVAL_MINUTES == 0) and current_second < 60:
+        if (current_minute % INTERVAL_MINUTES == 5) and current_second < 10:
             if last_check != current_minute:  # Чтобы не сработало 10 раз за первые 10 сек
                 # Update DFs
                 new_30m = fetch_latest_klines('30m', 5)
@@ -247,3 +249,6 @@ if __name__ == "__main__":
                         pos_size = abs(get_position()[1])
                         close_position('short', pos_size)  # Закрыть short
                         print(f"{'EXIT' if price <= row['lower'] else 'STOP'} SHORT at {price}")
+                
+                last_check = now.minute
+                time.sleep(5)
