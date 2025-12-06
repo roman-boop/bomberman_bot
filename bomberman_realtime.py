@@ -123,7 +123,7 @@ def close_position(side, size):
             "side": "SELL" if close_side == "short" else "BUY",
             "positionSide": "SHORT" if close_side == "short" else "LONG",
             "type": "MARKET",
-            "timestamp": int(time.time() * 1000) + bx.time_offset,
+            "timestamp": int(time.time() * 1000),
             "quantity": size,
             "recvWindow": 5000,
             "reduceOnly": "true"  # ← Добавляем reduceOnly для закрытия
@@ -251,4 +251,5 @@ if __name__ == "__main__":
                         print(f"{'EXIT' if price <= row['lower'] else 'STOP'} SHORT at {price}")
                 
                 last_check = now.minute
+
                 time.sleep(5)
